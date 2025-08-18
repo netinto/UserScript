@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         DailyIssue AD cleaner
-// @version      1.0
-// @description  remove "hide" class from articleBody and hide .cover
+// @version      1.0.1
+// @description  DailyIssue AD Remove
 // @match        *://dailyissue.net/*
-// @run-at       document-end
+// @run-at       document-start
 // ==/UserScript==
 
 (function() {
