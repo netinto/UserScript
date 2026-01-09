@@ -161,6 +161,36 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
+    function autoExpandAndScroll() {
+        const expandBtn = document.querySelector('.dnjZ5j9eOR');
+        if (expandBtn && expandBtn.innerText.includes('펼쳐보기')) {
+            expandBtn.click();
+            showToast('상세정보를 자동으로 확장합니다.');
+        }
+
+        // 해시태그가 나타나면 해당 위치로 스크롤
+        const scrolltoHashtag = () => {
+            const element = findFirstHashtagElement();
+            if (element && !element.isDataOnly) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return true;
+            }
+            return false;
+        };
+
+        // 즉시 시도 및 약간의 대기 후 시도 (로딩 고려)
+        if (!scrolltoHashtag()) {
+            setTimeout(scrolltoHashtag, 1000);
+            setTimeout(scrolltoHashtag, 2500);
+        }
+    }
+
+    // 페이지 로드 후 자동 실행
+    window.addEventListener('load', () => {
+        // 네이버 페이지 특성상 지연 실행이 필요할 수 있음
+        setTimeout(autoExpandAndScroll, 1000);
+    });
+
     // 버튼 생성 및 연결
     const btn = document.createElement('button');
     btn.id = 'hashtag-copy-btn';
