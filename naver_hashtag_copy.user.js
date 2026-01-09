@@ -10,6 +10,7 @@
 // @match        https://m.smartstore.naver.com/*/products/*
 // @grant        GM_setClipboard
 // @grant        GM_addStyle
+// @grant        unsafeWindow
 // ==/UserScript==
 
 (function () {
@@ -59,6 +60,29 @@
     let isAlreadyCopied = false;
 
     function findFirstHashtagElement() {
+        // 1. window.__PRELOADED_STATE__ 에서 추출 시도 (가장 정확함)
+        // 유저스크립트 전용 스코프이므로 페이지의 window 객체에 직접 접근하기 위해 unsafeWindow 또는 스크립트 주입 활용 가능
+        // 여기서는 안전하게 페이지 내의 정적 데이터를 텍스트로 읽어오는 방식이나, 
+        // 이미 렌더링된 요소가 없을 경우에 대비해 데이터 객체를 탐색하는 로직을 추가합니다.
+
+        try {
+            // 브라우저 페이지의 클라이언트 사이드 변수에 접근 (비표준 방식이나 네이버에서 유효)
+            const state = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).__PRELOADED_STATE__;
+            if (state && state.productSimpleView && state.productSimpleView.product && state.productSimpleView.product.seoInfo) {
+                const tags = state.productSimpleView.product.seoInfo.sellerTags;
+                if (tags && tags.length > 0) {
+                    // 가상의 요소를 만들어 기존 doCopy 로직과 호환성 유지
+                    const virtualEl = document.createElement('a');
+                    virtualEl.innerText = tags[0].text;
+                    // 데이터에서 가져온 경우 스크롤은 생략하거나 특정 영역으로 이동
+                    virtualEl.isDataOnly = true;
+                    return virtualEl;
+                }
+            }
+        } catch (e) {
+            console.log('Data extraction failed, falling back to DOM search');
+        }
+
         const container = document.querySelector('.NAR95xKIue');
         if (container) {
             const firstLink = container.querySelector('a');
@@ -88,13 +112,15 @@
         const text = element.innerText.trim().replace(/^#/, '');
         GM_setClipboard(text);
 
-        // 1. 해당 위치로 스크롤
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 1. 해당 위치로 스크롤 (실제 DOM 요소인 경우에만)
+        if (!element.isDataOnly) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-        // 2. 시각적 유도 (깜빡임 효과)
-        const originalBg = element.style.backgroundColor;
-        element.style.backgroundColor = '#ffff00';
-        setTimeout(() => { element.style.backgroundColor = originalBg; }, 1000);
+            // 2. 시각적 유도 (깜빡임 효과)
+            const originalBg = element.style.backgroundColor;
+            element.style.backgroundColor = '#ffff00';
+            setTimeout(() => { element.style.backgroundColor = originalBg; }, 1000);
+        }
 
         showToast(`${isAuto ? '[자동] ' : ''}복사됨: ${text}`);
         isAlreadyCopied = true;
