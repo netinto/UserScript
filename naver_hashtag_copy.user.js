@@ -2,10 +2,12 @@
 // @name         Naver Brand Store Hashtag Copier
 // @namespace    http://tampermonkey.net/
 // @version      1.0
-// @description  네이버 브랜드스토어 상품 상세 페이지에서 첫 번째 해시태그를 복사합니다.
+// @description  네이버 브랜드 및 스마트 스토어 상품 상세 페이지에서 첫 번째 해시태그를 복사합니다.
 // @author       Antigravity
 // @match        https://brand.naver.com/*/products/*
 // @match        https://m.brand.naver.com/*/products/*
+// @match        https://smartstore.naver.com/*/products/*
+// @match        https://m.smartstore.naver.com/*/products/*
 // @grant        GM_setClipboard
 // @grant        GM_addStyle
 // ==/UserScript==
